@@ -1,13 +1,13 @@
 export type LanguageKey = 'python' | 'java' | 'c';
+export type TerminalTab = 'output' | 'errors' | 'ai';
 
 export interface LanguageConfig {
   name: string;
   file: string;
   pistonLang: string;
   pistonVersion: string;
-  dotClass: string;
-  starter: string;
   color: string;
+  starter: string;
 }
 
 export interface PistonResponse {
@@ -25,4 +25,23 @@ export interface PistonResponse {
     signal: string | null;
     output: string;
   };
+}
+
+export interface OutputLine {
+  text: string;
+  type: 'output' | 'error' | 'info' | 'prompt';
+}
+
+export interface ErrorItem {
+  message: string;
+  isError: boolean;
+}
+
+export interface AIResponse {
+  lines: AILine[];
+}
+
+export interface AILine {
+  text: string;
+  type: 'title' | 'text' | 'code' | 'spacer';
 }
