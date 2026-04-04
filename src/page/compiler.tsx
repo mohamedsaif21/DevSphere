@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { LANG_CONFIG } from '@/constants/languages';
-import { LanguageKey, PistonResponse } from '@/types/compiler';
+import { LanguageKey, PistonResponse } from '@/types/editor';
 
 export default function DevSphereCompiler() {
   const [langKey, setLangKey] = useState<LanguageKey>('python');
