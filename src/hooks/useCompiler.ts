@@ -46,25 +46,45 @@ export function useCompiler() {
     setAiLines([]);
 
     const cfg = LANG_CONFIG[langKey];
-    const prompt = errorText
-      ? `You are a helpful coding tutor inside DevSphere. A student wrote the following ${cfg.name} code and got an error. Explain clearly:\n1. What the error means (in simple words)\n2. Why it happened\n3. How to fix it with corrected code\n\nCode:\n\`\`\`\n${codeToDebug}\n\`\`\`\n\nError:\n${errorText}\n\nBe concise, friendly, and educational.`
-      : `You are a helpful coding tutor inside DevSphere. Review this ${cfg.name} code and:\n1. Explain what it does\n2. Point out any issues, bad practices, or improvements\n3. Show an improved version if needed\n\nCode:\n\`\`\`\n${codeToDebug}\n\`\`\`\n\nBe concise and educational.`;
-
+    
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch('/api/debug', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          messages: [{ role: 'user', content: prompt }],
+          code: codeToDebug,
+          error: errorText,
+          language: cfg.name,
         }),
       });
 
       const data = await res.json();
 
-      if (data.content?.[0]?.text) {
-        const parsed = parseAIText(data.content[0].text);
+      if (!res.ok || data.error) {
+        const errMsg = typeof data.error === 'string' ? data.error : 'AI debug request failed.';
+        const quota = /429|quota|Too Many Requests|limit:\s*0/i.test(errMsg);
+        const fallback = buildFallbackAI(langKey, errorText);
+        setAiLines([
+          {
+            type: 'title',
+            content: quota ? 'Gemini rate limit / quota' : 'Gemini unavailable',
+          },
+          { type: 'text', content: errMsg },
+          {
+            type: 'text',
+            content: quota
+              ? 'Try again in ~1 minute, remove GEMINI_MODEL from .env.local so the app can fall back across models, or enable billing in Google AI Studio.'
+              : 'If the key is missing, set GEMINI_API_KEY in .env.local and restart the dev server. Offline tips below.',
+          },
+          { type: 'spacer', content: '' },
+          ...fallback,
+        ]);
+        setAiState('done');
+        return;
+      }
+
+      if (data.text) {
+        const parsed = parseAIText(data.text);
         setAiLines(parsed);
         setAiState('done');
       } else {
@@ -93,17 +113,37 @@ export function useCompiler() {
     setOutputLines([{ text: 'Running...', type: 'info' }]);
 
     try {
-      const res = await fetch('https://emkc.org/api/v2/piston/execute', {
+      const res = await fetch('/api/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          code: trimmed,
           language: cfg.pistonLang,
           version: cfg.pistonVersion,
-          files: [{ name: cfg.file, content: trimmed }],
+          filename: cfg.file,
         }),
       });
 
       const data = await res.json();
+      if (!res.ok || data.error) {
+        const msg =
+          typeof data.error === 'string'
+            ? data.error
+            : 'Run failed. Check your network or try again.';
+        const lines: OutputLine[] = [{ text: `⚠ ${msg}`, type: 'error' }];
+        if (typeof data.hint === 'string') {
+          lines.push({ text: data.hint, type: 'info' });
+        } else {
+          lines.push({
+            text: 'Runs go to Piston via /api/run. If emkc returns 401, add PISTON_API_KEY to .env.local.',
+            type: 'info',
+          });
+        }
+        setOutputLines(lines);
+        setActiveTab('output');
+        return;
+      }
+
       const stdout: string = data.run?.stdout || '';
       const stderr: string = (data.run?.stderr || '') + (data.compile?.stderr || '');
       const exitCode: number = data.run?.code ?? 0;
