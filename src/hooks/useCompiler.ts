@@ -117,83 +117,78 @@ export function useCompiler() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          code: trimmed,
-          language: cfg.pistonLang,
-          version: cfg.pistonVersion,
-          filename: cfg.file,
+          code:     trimmed,
+          language: langKey,   // 'python' | 'java' | 'c'
         }),
       });
 
       const data = await res.json();
-      if (!res.ok || data.error) {
-        const msg =
-          typeof data.error === 'string'
-            ? data.error
-            : 'Run failed. Check your network or try again.';
-        const lines: OutputLine[] = [{ text: `⚠ ${msg}`, type: 'error' }];
-        if (typeof data.hint === 'string') {
-          lines.push({ text: data.hint, type: 'info' });
-        } else {
-          lines.push({
-            text: 'Runs go to Piston via /api/run. If emkc returns 401, add PISTON_API_KEY to .env.local.',
-            type: 'info',
-          });
-        }
-        setOutputLines(lines);
-        setActiveTab('output');
-        return;
-      }
 
-      const stdout: string = data.run?.stdout || '';
-      const stderr: string = (data.run?.stderr || '') + (data.compile?.stderr || '');
-      const exitCode: number = data.run?.code ?? 0;
+      const stdout:   string = data.stdout  || '';
+      const stderr:   string = data.stderr  || '';
+      const exitCode: number = data.exitCode ?? 0;
+      const status:   string = data.status  || '';
+      const execTime: string = data.time    || '';
+      const memory:   string = data.memory  || '';
 
+      // Build output lines
       const lines: OutputLine[] = [
-        { text: `▶ ${cfg.name} · ${cfg.file} · Piston API`, type: 'info' },
+        { text: `▶ ${cfg.name} · ${cfg.file} · Judge0 (RapidAPI)`, type: 'info' },
       ];
+
       if (stdout) {
-        stdout.split('\n').forEach((l) => lines.push({ text: l, type: 'output' }));
+        stdout.split('\n').forEach((l) => {
+          lines.push({ text: l, type: 'output' });
+        });
       }
-      if (stderr.trim()) {
-        stderr.split('\n').filter(Boolean).forEach((l) => lines.push({ text: l, type: 'error' }));
+
+      if (stderr) {
+        stderr.split('\n').filter(Boolean).forEach((l) => {
+          lines.push({ text: l, type: 'error' });
+        });
       }
-      if (!stdout && !stderr.trim()) {
+
+      if (!stdout && !stderr) {
         lines.push({ text: 'Program exited with no output.', type: 'info' });
       }
-      lines.push({ text: `Process finished. Exit code: ${exitCode}`, type: 'prompt' });
+
+      // Show time + memory stats
+      const stats = [
+        execTime ? `${execTime}s` : '',
+        memory   ? memory         : '',
+        status,
+      ].filter(Boolean).join(' · ');
+
+      lines.push({ text: `Exit code: ${exitCode}  ${stats}`, type: 'prompt' });
 
       setOutputLines(lines);
 
-      if (stderr.trim()) {
+      // ── Handle errors → trigger AI debug ──
+      if (stderr) {
         const errLines = stderr.split('\n').filter((l) =>
-          /error|exception|traceback|cannot/i.test(l)
+          /error|exception|traceback|cannot|undefined|failed/i.test(l)
         );
-        const count = errLines.length || 1;
-        setErrorCount(count);
+        setErrorCount(errLines.length || 1);
         setErrorItems(
-          stderr
-            .split('\n')
-            .filter(Boolean)
-            .map((l) => ({
-              message: l,
-              isError: /error|exception|traceback/i.test(l),
-            }))
+          stderr.split('\n').filter(Boolean).map((l) => ({
+            message:  l,
+            isError:  /error|exception|traceback/i.test(l),
+          }))
         );
-        // Auto-trigger AI
         await runAIDebug(trimmed, stderr.trim());
       } else {
         setErrorCount(0);
         setErrorItems([]);
         setAiLines([
-          { type: 'title', content: '✓ Code ran successfully!' },
-          { type: 'text', content: 'No errors detected. Great work!' },
+          { type: 'title',   content: '✓ Code ran successfully!' },
+          { type: 'text',    content: `Finished in ${execTime || '?'}s · No errors detected.` },
         ]);
         setAiState('done');
       }
     } catch {
       setOutputLines([
-        { text: '⚠ Network error: Could not reach Piston API.', type: 'error' },
-        { text: 'Check your internet connection and try again.', type: 'info' },
+        { text: '⚠ Network error: Could not reach the Judge0 API.', type: 'error' },
+        { text: 'Check your connection and RAPIDAPI_KEY in .env.local', type: 'info' },
       ]);
     } finally {
       setIsRunning(false);

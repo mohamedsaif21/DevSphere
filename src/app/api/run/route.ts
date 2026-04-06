@@ -1,80 +1,154 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const DEFAULT_PISTON_EXECUTE = 'https://emkc.org/api/v2/piston/execute';
+// Judge0 language IDs — only Python, Java, C as per your project
+const LANGUAGE_IDS: Record<string, number> = {
+  python: 71,  // Python 3.8.1
+  java:   62,  // Java (OpenJDK 13.0.1)
+  c:      50,  // C (GCC 9.2.0)
+};
 
-function pistonExecuteUrl(): string {
-  const raw = process.env.PISTON_API_URL?.trim();
-  if (!raw) return DEFAULT_PISTON_EXECUTE;
-  const u = raw.replace(/\/$/, '');
-  return u.endsWith('/execute') ? u : `${u}/execute`;
-}
+// Default filenames per language
+const FILENAMES: Record<string, string> = {
+  python: 'main.py',
+  java:   'Main.java',
+  c:      'main.c',
+};
+
+const RAPIDAPI_HOST = 'judge029.p.rapidapi.com';
+const RAPIDAPI_URL  = `https://${RAPIDAPI_HOST}`;
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { code, language, version, filename } = body as {
-      code?: string;
-      language?: string;
-      version?: string;
-      filename?: string;
-    };
+    const { code, language } = await req.json();
 
-    if (typeof code !== 'string' || !code.trim()) {
-      return NextResponse.json({ error: 'Missing or empty code.' }, { status: 400 });
-    }
-    if (typeof language !== 'string' || typeof version !== 'string') {
-      return NextResponse.json({ error: 'Missing language or version.' }, { status: 400 });
+    // Validate
+    if (!code || !language) {
+      return NextResponse.json(
+        { stdout: '', stderr: 'Missing code or language.', exitCode: 1, status: 'Bad Request' },
+        { status: 400 }
+      );
     }
 
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    const token = process.env.PISTON_API_KEY?.trim() || process.env.PISTON_BEARER_TOKEN?.trim();
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
+    const languageId = LANGUAGE_IDS[language as string];
+    if (!languageId) {
+      return NextResponse.json(
+        { stdout: '', stderr: `Unsupported language: ${language}. Use python, java, or c.`, exitCode: 1, status: 'Bad Request' },
+        { status: 400 }
+      );
     }
 
-    const url = pistonExecuteUrl();
-    const res = await fetch(url, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        language,
-        version,
-        files: [{ name: filename || 'main', content: code }],
-      }),
+    const apiKey = process.env.RAPIDAPI_KEY;
+    if (!apiKey) {
+      return NextResponse.json(
+        { stdout: '', stderr: 'Server config error: RAPIDAPI_KEY not set.', exitCode: 1, status: 'Config Error' },
+        { status: 500 }
+      );
+    }
+
+    // ── STEP 1: Submit code to Judge0 ──────────────────────────────
+    const submitRes = await fetch(
+      `${RAPIDAPI_URL}/submissions?base64_encoded=false&wait=false`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type':   'application/json',
+          'x-rapidapi-host': RAPIDAPI_HOST,
+          'x-rapidapi-key':  apiKey,
+        },
+        body: JSON.stringify({
+          source_code:       code,
+          language_id:       languageId,
+          stdin:             '',
+          cpu_time_limit:    5,
+          memory_limit:      128000,
+        }),
+      }
+    );
+
+    if (!submitRes.ok) {
+      const errText = await submitRes.text();
+      throw new Error(`Judge0 submit failed (${submitRes.status}): ${errText}`);
+    }
+
+    const submitData = await submitRes.json();
+    const token: string = submitData.token;
+
+    if (!token) {
+      throw new Error('No token returned from Judge0.');
+    }
+
+    // ── STEP 2: Poll for result (max 10 tries, 1s apart) ───────────
+    let result: Record<string, unknown> | null = null;
+
+    for (let attempt = 0; attempt < 10; attempt++) {
+      await new Promise((r) => setTimeout(r, 1000));
+
+      const pollRes = await fetch(
+        `${RAPIDAPI_URL}/submissions/${token}?base64_encoded=false&fields=stdout,stderr,compile_output,status,exit_code,time,memory`,
+        {
+          method: 'GET',
+          headers: {
+            'x-rapidapi-host': RAPIDAPI_HOST,
+            'x-rapidapi-key':  apiKey,
+          },
+        }
+      );
+
+      if (!pollRes.ok) continue;
+
+      const pollData = await pollRes.json();
+      const statusId: number = (pollData.status as { id: number })?.id ?? 0;
+
+      // Status IDs: 1 = In Queue, 2 = Processing, 3+ = Done
+      if (statusId >= 3) {
+        result = pollData as Record<string, unknown>;
+        break;
+      }
+    }
+
+    if (!result) {
+      return NextResponse.json({
+        stdout:   '',
+        stderr:   'Execution timed out. Please try again.',
+        exitCode: 1,
+        status:   'Timeout',
+      });
+    }
+
+    // ── STEP 3: Return clean result ────────────────────────────────
+    const stdout:        string = (result.stdout        as string) ?? '';
+    const stderr:        string = (result.stderr        as string) ?? '';
+    const compileOutput: string = (result.compile_output as string) ?? '';
+    const exitCode:      number = (result.exit_code     as number) ?? 0;
+    const statusDesc:    string = (result.status as { description: string })?.description ?? 'Unknown';
+    const execTime:      string = (result.time          as string) ?? '';
+    const memory:        number = (result.memory        as number) ?? 0;
+
+    // Merge compile errors + runtime errors
+    const errorOutput = [compileOutput, stderr].filter(Boolean).join('\n').trim();
+
+    return NextResponse.json({
+      stdout:   stdout.trim(),
+      stderr:   errorOutput,
+      exitCode,
+      status:   statusDesc,
+      time:     execTime,
+      memory:   memory ? `${memory} KB` : '',
+      language: FILENAMES[language],
     });
 
-    const data = (await res.json()) as Record<string, unknown>;
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown server error';
+    console.error('[/api/run] Error:', message);
 
-    if (res.status === 401) {
-      return NextResponse.json(
-        {
-          error: 'Piston rejected the request (401). The public emkc.org API now requires a Bearer token.',
-          hint:
-            'Add PISTON_API_KEY to .env.local (token from Engineer Man / Piston — see github.com/engineer-man/emkc), or set PISTON_API_URL to your self-hosted Piston execute URL.',
-          detail: data,
-        },
-        { status: 401 }
-      );
-    }
-
-    if (!res.ok) {
-      const pistonMsg =
-        typeof data.message === 'string'
-          ? data.message
-          : typeof (data as { error?: string }).error === 'string'
-            ? (data as { error: string }).error
-            : `HTTP ${res.status}`;
-      return NextResponse.json(
-        {
-          error: `Piston request failed: ${pistonMsg}`,
-          detail: data,
-        },
-        { status: res.status >= 400 ? res.status : 502 }
-      );
-    }
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error('Error in /api/run:', error);
-    return NextResponse.json({ error: 'Failed to execute code' }, { status: 500 });
+    return NextResponse.json(
+      {
+        stdout:   '',
+        stderr:   `Server error: ${message}`,
+        exitCode: 1,
+        status:   'Internal Error',
+      },
+      { status: 500 }
+    );
   }
 }
