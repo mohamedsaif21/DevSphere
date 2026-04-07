@@ -1,24 +1,5 @@
 # DevSphere - Project Documentation
 
-**Date**: April 6, 2026  
-**Status**: ✅ Judge0 RapidAPI Integration Complete  
-**Version**: 0.1.0  
-
----
-
-## 📋 Table of Contents
-
-1. [Project Overview](#project-overview)
-2. [What Has Been Done](#what-has-been-done)
-3. [Tech Stack](#tech-stack)
-4. [Project Structure](#project-structure)
-5. [Recent Changes & Integration](#recent-changes--integration)
-6. [API Endpoints](#api-endpoints)
-7. [Environment Configuration](#environment-configuration)
-8. [Running the Application](#running-the-application)
-9. [Features](#features)
-10. [File Descriptions](#file-descriptions)
-
 ---
 
 ## 🎯 Project Overview
