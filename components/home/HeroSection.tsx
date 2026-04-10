@@ -74,18 +74,6 @@ export default function HeroSection() {
             </button>
           </div>
 
-          <div className="flex items-center justify-center gap-8 mt-10 flex-wrap">
-            {[
-              { label: '50k+', desc: 'Developers' },
-              { label: '99.9%', desc: 'Uptime SLA' },
-              { label: '< 400ms', desc: 'Cold Start' },
-            ].map((stat) => (
-              <div key={stat.label} className="text-center">
-                <div className="text-xl font-bold font-grotesk text-gradient-primary">{stat.label}</div>
-                <div className="text-xs mt-0.5" style={{ color: '#cbc3d7' }}>{stat.desc}</div>
-              </div>
-            ))}
-          </div>
         </div>
 
         <IDEMockup />
