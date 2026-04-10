@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { getLocalSessionUserId } from '@/lib/localSession';
 import { deleteCode, getUserSavedCodes } from '@/lib/savedCodeService';
 import { SavedCode } from '@/types/savedCode';
 
@@ -49,13 +49,13 @@ const ProjectExplorer: React.FC = () => {
       setLoading(true);
       setError('');
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
+        const userId = getLocalSessionUserId();
+        if (!userId) {
           setSavedCodes([]);
           setError('Please sign in to view your saved projects.');
           return;
         }
-        const result = await getUserSavedCodes(user.id);
+        const result = await getUserSavedCodes(userId);
         if (result.success) {
           setSavedCodes(result.data || []);
         } else {

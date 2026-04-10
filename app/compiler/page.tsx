@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCompiler } from '@/hooks/use-compiler';
-import { supabase } from '@/lib/supabase';
+import { getLocalSessionUserId } from '@/lib/localSession';
 import { saveCode } from '@/lib/savedCodeService';
 import CompilerHeader from '@/components/compiler/CompilerHeader';
 import CodeEditor from '@/components/compiler/CodeEditor';
@@ -53,36 +53,25 @@ export default function CompilerPage() {
       .replace(/^\.+/, '')
       .slice(0, 80) || 'code';
 
-  // Check auth and load saved code if available
+  // Session + load saved code from Saved Projects (sessionStorage)
   useEffect(() => {
-    const initPage = async () => {
+    const userId = getLocalSessionUserId();
+    setUser(userId ? { id: userId } : null);
+
+    const savedCodeJSON = sessionStorage.getItem('loadCode');
+    if (savedCodeJSON) {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        // Allow guests to use the compiler; require auth only for saving/viewing projects.
-        setUser(user ?? null);
-
-        // Check if there's code to load from saved projects
-        const savedCodeJSON = sessionStorage.getItem('loadCode');
-        if (savedCodeJSON) {
-          try {
-            const savedCode = JSON.parse(savedCodeJSON);
-            // Set language first, then code
-            if (savedCode.language) {
-              setLangKey(savedCode.language as any);
-            }
-            setCode(savedCode.code);
-            sessionStorage.removeItem('loadCode');
-          } catch (err) {
-            console.error('Error parsing saved code:', err);
-          }
+        const savedCode = JSON.parse(savedCodeJSON);
+        if (savedCode.language) {
+          setLangKey(savedCode.language as any);
         }
+        setCode(savedCode.code);
+        sessionStorage.removeItem('loadCode');
       } catch (err) {
-        console.error('Error initializing compiler:', err);
+        console.error('Error parsing saved code:', err);
       }
-    };
-
-    initPage();
-  }, [router, setCode, setLangKey]);
+    }
+  }, [setCode, setLangKey]);
 
   const handleSave = () => {
     if (!user) {

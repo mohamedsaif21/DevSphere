@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { getLocalSessionUserId } from '@/lib/localSession';
 import { getUserSavedCodes, deleteCode } from '@/lib/savedCodeService';
 import { SavedCode } from '@/types/savedCode';
 import Navbar from '@/components/Navbar';
@@ -14,22 +14,18 @@ export default function SavedProjectsPage() {
   const [savedCodes, setSavedCodes] = useState<SavedCode[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [user, setUser] = useState<any>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Check auth
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
+        const userId = getLocalSessionUserId();
+        if (!userId) {
           router.replace('/login');
           return;
         }
-        setUser(user);
 
-        // Fetch saved codes
-        const result = await getUserSavedCodes(user.id);
+        const result = await getUserSavedCodes(userId);
         if (result.success) {
           setSavedCodes(result.data || []);
         } else {
