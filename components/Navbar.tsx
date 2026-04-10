@@ -2,8 +2,16 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Code as Code2, Menu, X, Zap } from 'lucide-react';
+import { Code as Code2, Menu, X, Zap, User, LogOut, FolderOpen } from 'lucide-react';
 import Link from 'next/link';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface NavbarProps {
   showAuthLinks?: boolean;
@@ -53,18 +61,37 @@ export default function Navbar({ showAuthLinks = true }: NavbarProps) {
             {isLoggedIn ? (
               <>
                 <button
-                  onClick={handleLogout}
-                  className="btn-outline-ds px-4 py-2 rounded-xl text-sm font-medium"
-                >
-                  Logout
-                </button>
-                <button
                   className="btn-cta px-4 py-2 rounded-xl text-sm flex items-center gap-2"
                   style={{ color: '#0c1324' }}
                 >
                   <Zap className="w-3.5 h-3.5" />
                   Start Exploring
                 </button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className="btn-outline-ds px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2"
+                    >
+                      <User className="w-4 h-4" />
+                      Profile
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/projects" className="flex items-center gap-2 cursor-pointer">
+                        <FolderOpen className="w-4 h-4" />
+                        Projects
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2 cursor-pointer text-red-400">
+                      <LogOut className="w-4 h-4" />
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             ) : showAuthLinks ? (
               <>
@@ -112,12 +139,23 @@ export default function Navbar({ showAuthLinks = true }: NavbarProps) {
           ))}
           <div className="border-t pt-3 flex flex-col gap-2" style={{ borderColor: 'rgba(73,68,84,0.3)' }}>
             {isLoggedIn ? (
-              <button
-                onClick={handleLogout}
-                className="btn-outline-ds w-full py-2.5 rounded-xl text-sm font-medium"
-              >
-                Logout
-              </button>
+              <div className="flex flex-col gap-2">
+                <Link 
+                  href="/projects" 
+                  className="w-full py-2.5 rounded-xl text-sm font-medium text-center flex items-center justify-center gap-2 transition-colors"
+                  style={{ color: '#cbc3d7', border: '1px solid rgba(202, 195, 215, 0.2)' }}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <FolderOpen className="w-4 h-4" />
+                  Projects
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="btn-outline-ds w-full py-2.5 rounded-xl text-sm font-medium"
+                >
+                  Logout
+                </button>
+              </div>
             ) : (
               <>
                 <Link href="/login" className="btn-outline-ds w-full py-2.5 rounded-xl text-sm font-medium text-center">
