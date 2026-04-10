@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getLocalSessionUserId } from '@/lib/localSession';
 import { getUserSavedCodes, deleteCode } from '@/lib/savedCodeService';
 import { SavedCode } from '@/types/savedCode';
 import Navbar from '@/components/Navbar';
@@ -14,18 +13,23 @@ export default function SavedProjectsPage() {
   const [savedCodes, setSavedCodes] = useState<SavedCode[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [user, setUser] = useState<any>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userId = getLocalSessionUserId();
-        if (!userId) {
+        // Check auth using localStorage
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        const userEmail = localStorage.getItem('userEmail');
+        if (isLoggedIn !== 'true' || !userEmail) {
           router.replace('/login');
           return;
         }
+        setUser({ email: userEmail });
 
-        const result = await getUserSavedCodes(userId);
+        // Fetch saved codes
+        const result = await getUserSavedCodes(userEmail);
         if (result.success) {
           setSavedCodes(result.data || []);
         } else {
