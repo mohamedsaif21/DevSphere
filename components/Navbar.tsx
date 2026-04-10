@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { signOut } from '../lib/supabase';
 import { Code as Code2, Menu, X, Zap, User, LogOut, FolderOpen } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -30,8 +29,7 @@ export default function Navbar({ showAuthLinks = true }: NavbarProps) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleLogout = async () => {
-    await signOut();
+  const handleLogout = () => {
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('userName');
     localStorage.removeItem('userEmail');
