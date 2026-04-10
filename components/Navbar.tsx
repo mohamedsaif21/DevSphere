@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { signOut } from '../lib/supabase';
-import { Code as Code2, Menu, X, Zap, User, LogOut, FolderOpen } from 'lucide-react';
+import { Code as Code2, Menu, X, User, LogOut, FolderOpen } from 'lucide-react';
 import Link from 'next/link';
 import {
   DropdownMenu,
@@ -62,13 +62,6 @@ export default function Navbar({ showAuthLinks = true }: NavbarProps) {
           <div className="hidden md:flex items-center gap-3">
             {isLoggedIn ? (
               <>
-                <button
-                  className="btn-cta px-4 py-2 rounded-xl text-sm flex items-center gap-2"
-                  style={{ color: '#0c1324' }}
-                >
-                  <Zap className="w-3.5 h-3.5" />
-                  Start Exploring
-                </button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button

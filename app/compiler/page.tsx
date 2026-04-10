@@ -29,18 +29,37 @@ export default function CompilerPage() {
     errorCount,
     runCode, debugCode, clearOutput,
     currentLang,
+    pushOutputLine,
   } = useCompiler();
+
+  const downloadCodeAsFile = (filename: string, contents: string) => {
+    const blob = new Blob([contents], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const toSafeFilename = (name: string) =>
+    name
+      .trim()
+      .replace(/[<>:"/\\|?*\u0000-\u001F]/g, '-') // windows-illegal + control chars
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^\.+/, '')
+      .slice(0, 80) || 'code';
 
   // Check auth and load saved code if available
   useEffect(() => {
     const initPage = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          router.replace('/login');
-          return;
-        }
-        setUser(user);
+        // Allow guests to use the compiler; require auth only for saving/viewing projects.
+        setUser(user ?? null);
 
         // Check if there's code to load from saved projects
         const savedCodeJSON = sessionStorage.getItem('loadCode');
@@ -66,13 +85,17 @@ export default function CompilerPage() {
   }, [router, setCode, setLangKey]);
 
   const handleSave = () => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
     setIsModalOpen(true);
   };
 
   const handleSaveCode = async (title: string, description: string) => {
     if (!user) {
-      setError('User not authenticated');
-      return;
+      router.push('/login');
+      throw new Error('Please sign in to save code.');
     }
 
     setIsSaving(true);
@@ -86,13 +109,21 @@ export default function CompilerPage() {
 
       if (result.success) {
         setError('');
-        // Optional: Show success notification
-        console.log('Code saved successfully');
+        const ext = currentLang.file.includes('.') ? currentLang.file.split('.').pop() : '';
+        const safeBase = toSafeFilename(title);
+        const filename = ext && !safeBase.toLowerCase().endsWith(`.${ext.toLowerCase()}`)
+          ? `${safeBase}.${ext}`
+          : safeBase;
+
+        pushOutputLine({ type: 'info', text: `Saved: ${title} (${langKey}) → ${filename}` });
+        downloadCodeAsFile(filename, code);
       } else {
         setError(result.error);
+        pushOutputLine({ type: 'error', text: `Save failed: ${result.error}` });
       }
     } catch (err: any) {
       setError(err?.message || 'Failed to save code');
+      pushOutputLine({ type: 'error', text: `Save failed: ${err?.message || 'Failed to save code'}` });
     } finally {
       setIsSaving(false);
     }
