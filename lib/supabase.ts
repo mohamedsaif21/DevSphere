@@ -1,9 +1,25 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || '';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() || '';
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+/** True when real Supabase env vars are set (e.g. on Vercel or .env.local). */
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+
+/**
+ * Supabase throws "supabaseUrl is required" if url/key are empty.
+ * That breaks `next build` / prerender on Vercel when env vars are missing.
+ * Use public demo placeholders only so the bundle loads; set real vars in Vercel for production.
+ * @see https://supabase.com/docs/guides/getting-started
+ */
+const fallbackUrl = 'https://placeholder.supabase.co';
+const fallbackAnonKey =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJpYXQiOjE2MzIwOTY0MzAsImV4cCI6MTk0NzY3MzQ0MH0.placeholder';
+
+export const supabase = createClient(
+  isSupabaseConfigured ? supabaseUrl : fallbackUrl,
+  isSupabaseConfigured ? supabaseAnonKey : fallbackAnonKey
+);
 
 export async function signUpWithEmail(email: string, password: string, fullName: string) {
   try {
