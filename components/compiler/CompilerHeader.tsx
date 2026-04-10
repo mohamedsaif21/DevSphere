@@ -59,13 +59,6 @@ export default function CompilerHeader({ langKey, isRunning, onLangChange, onRun
         DevSphere
       </div>
 
-      <nav className="ds-nav">
-        <span className="ds-nav-item ds-nav-active">Files</span>
-        <span className="ds-nav-item">Edit</span>
-        <span className="ds-nav-item">View</span>
-        <span className="ds-nav-item">Terminal</span>
-      </nav>
-
       <div className="ds-spacer" />
 
       <div className="ds-lang-wrap">
