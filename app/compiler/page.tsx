@@ -21,6 +21,13 @@ export default function CompilerPage() {
     currentLang,
   } = useCompiler();
 
+  const handleSave = () => {
+    // Save code to localStorage
+    localStorage.setItem(`code_${langKey}`, code);
+    // You can add a toast notification here later
+    console.log('Code saved successfully');
+  };
+
   return (
     <div className="ds-root">
       <CompilerHeader
@@ -29,6 +36,7 @@ export default function CompilerPage() {
         onLangChange={setLangKey}
         onRun={runCode}
         onDebug={debugCode}
+        onSave={handleSave}
       />
 
       <div className="ds-workspace">

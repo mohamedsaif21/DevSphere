@@ -291,6 +291,26 @@
 .ds-lang-opt-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 
 /* ── BUTTONS ── */
+.ds-btn-save {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background: transparent;
+  color: var(--ds-text-secondary);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: var(--ds-sans);
+  transition: all .15s;
+}
+.ds-btn-save-icon {
+  flex-shrink: 0;
+  display: block;
+}
+.ds-btn-save:hover { color: var(--ds-text); background: var(--ds-surface2); transform: translateY(-1px); }
+.ds-btn-save:active { transform: translateY(0); }
+
 .ds-btn-run {
   display: flex;
   align-items: center;

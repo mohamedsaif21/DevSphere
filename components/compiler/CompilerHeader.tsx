@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Save } from 'lucide-react';
 
 function IconRunPlay({ className }: { className?: string }) {
   return (
@@ -45,9 +46,10 @@ interface HeaderProps {
   onLangChange: (key: LanguageKey) => void;
   onRun: () => void;
   onDebug: () => void;
+  onSave: () => void;
 }
 
-export default function CompilerHeader({ langKey, isRunning, onLangChange, onRun, onDebug }: HeaderProps) {
+export default function CompilerHeader({ langKey, isRunning, onLangChange, onRun, onDebug, onSave }: HeaderProps) {
   const currentLang = LANG_CONFIG[langKey];
 
   return (
@@ -82,6 +84,15 @@ export default function CompilerHeader({ langKey, isRunning, onLangChange, onRun
           ))}
         </div>
       </div>
+
+      <button
+        type="button"
+        className="ds-btn-save"
+        onClick={onSave}
+        title="Save code"
+      >
+        <Save className="ds-btn-save-icon" size={16} />
+      </button>
 
       <button
         type="button"

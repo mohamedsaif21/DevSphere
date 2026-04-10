@@ -4,6 +4,7 @@ import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Code as Code2, Eye, EyeOff, ArrowRight, Check } from 'lucide-react';
+import { signUpWithEmail } from '@/lib/supabase';
 
 const perks = [
   '5 GB cloud workspace storage',
@@ -63,12 +64,18 @@ export default function RegisterPage() {
     }
 
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 900));
-
-    localStorage.setItem('isLoggedIn', 'true');
-    localStorage.setItem('userEmail', email);
-    localStorage.setItem('userName', fullName);
-    router.push('/home');
+    
+    const result = await signUpWithEmail(email, password, fullName);
+    
+    if (result.success) {
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('userEmail', email);
+      localStorage.setItem('userName', fullName);
+      router.push('/home');
+    } else {
+      setError(result.error || 'Failed to create account. Please try again.');
+      setLoading(false);
+    }
   };
 
   return (

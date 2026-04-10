@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { signOut } from '@/lib/supabase';
 
 interface NavbarProps {
   showAuthLinks?: boolean;
@@ -30,9 +31,11 @@ export default function Navbar({ showAuthLinks = true }: NavbarProps) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await signOut();
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('userName');
+    localStorage.removeItem('userEmail');
     setIsLoggedIn(false);
     router.push('/login');
   };
