@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { signOut } from '../lib/supabase';
 import { Code as Code2, Menu, X, Zap, User, LogOut, FolderOpen } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -11,9 +12,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { signOut } from '@/lib/supabase';
-
+} from './ui/dropdown-menu';
 interface NavbarProps {
   showAuthLinks?: boolean;
 }

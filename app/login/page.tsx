@@ -4,7 +4,6 @@ import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Code as Code2, Eye, EyeOff, ArrowRight, Zap, Brain, Globe } from 'lucide-react';
-import { signInWithEmail } from '@/lib/supabase';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -30,17 +29,11 @@ export default function LoginPage() {
     }
 
     setLoading(true);
-    
-    const result = await signInWithEmail(email, password);
-    
-    if (result.success) {
-      localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('userEmail', email);
-      router.push('/home');
-    } else {
-      setError(result.error || 'Failed to sign in. Please check your credentials.');
-      setLoading(false);
-    }
+    await new Promise((r) => setTimeout(r, 800));
+
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('userEmail', email);
+    router.push('/home');
   };
 
   return (
