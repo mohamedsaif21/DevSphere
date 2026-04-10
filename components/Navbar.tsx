@@ -82,9 +82,9 @@ export default function Navbar({ showAuthLinks = true }: NavbarProps) {
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link href="/projects" className="flex items-center gap-2 cursor-pointer">
+                      <Link href="/saved-projects" className="flex items-center gap-2 cursor-pointer">
                         <FolderOpen className="w-4 h-4" />
-                        Projects
+                        Saved Projects
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
@@ -104,7 +104,7 @@ export default function Navbar({ showAuthLinks = true }: NavbarProps) {
                   Sign In
                 </Link>
                 <Link
-                  href="/register"
+                  href="/compiler"
                   className="btn-cta px-4 py-2 rounded-xl text-sm"
                   style={{ color: '#0c1324' }}
                 >
@@ -143,13 +143,13 @@ export default function Navbar({ showAuthLinks = true }: NavbarProps) {
             {isLoggedIn ? (
               <div className="flex flex-col gap-2">
                 <Link 
-                  href="/projects" 
+                  href="/saved-projects" 
                   className="w-full py-2.5 rounded-xl text-sm font-medium text-center flex items-center justify-center gap-2 transition-colors"
                   style={{ color: '#cbc3d7', border: '1px solid rgba(202, 195, 215, 0.2)' }}
                   onClick={() => setMobileOpen(false)}
                 >
                   <FolderOpen className="w-4 h-4" />
-                  Projects
+                  Saved Projects
                 </Link>
                 <button
                   onClick={handleLogout}
@@ -163,7 +163,7 @@ export default function Navbar({ showAuthLinks = true }: NavbarProps) {
                 <Link href="/login" className="btn-outline-ds w-full py-2.5 rounded-xl text-sm font-medium text-center">
                   Sign In
                 </Link>
-                <Link href="/register" className="btn-cta w-full py-2.5 rounded-xl text-sm text-center" style={{ color: '#0c1324' }}>
+                <Link href="/compiler" className="btn-cta w-full py-2.5 rounded-xl text-sm text-center" style={{ color: '#0c1324' }}>
                   Get Started
                 </Link>
               </>

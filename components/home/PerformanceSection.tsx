@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { Zap, Shield, Globe, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
@@ -30,6 +31,12 @@ const features = [
 ];
 
 export default function PerformanceSection() {
+  const router = useRouter();
+
+  const handleGetStarted = () => {
+    router.push('/compiler');
+  };
+
   return (
     <section className="relative py-24 overflow-hidden">
       <div
@@ -80,14 +87,14 @@ export default function PerformanceSection() {
               ))}
             </div>
 
-            <Link
-              href="/register"
+            <button
+              onClick={handleGetStarted}
               className="btn-cta inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold"
               style={{ color: '#0c1324' }}
             >
               Get Started Free
               <ArrowRight className="w-4 h-4" />
-            </Link>
+            </button>
           </div>
 
           <div className="relative">

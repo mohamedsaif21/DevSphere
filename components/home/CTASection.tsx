@@ -1,9 +1,15 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowRight, Code as Code2 } from 'lucide-react';
 
 export default function CTASection() {
+  const router = useRouter();
+
+  const handleGetStarted = () => {
+    router.push('/compiler');
+  };
   return (
     <section className="relative py-24 overflow-hidden">
       <div
@@ -31,14 +37,14 @@ export default function CTASection() {
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link
-            href="/register"
+          <button
+            onClick={handleGetStarted}
             className="btn-cta px-8 py-4 rounded-xl text-base font-semibold flex items-center gap-2 w-full sm:w-auto justify-center"
             style={{ color: '#0c1324' }}
           >
             Get Started Free
             <ArrowRight className="w-4 h-4" />
-          </Link>
+          </button>
           <Link
             href="/login"
             className="btn-outline-ds px-8 py-4 rounded-xl text-base font-medium w-full sm:w-auto text-center"

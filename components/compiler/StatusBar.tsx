@@ -35,7 +35,7 @@ export default function StatusBar({ langKey, errorCount }: StatusBarProps) {
           <span className="material-symbols-outlined ds-status-icon" style={{ fontVariationSettings: "'FILL' 1" }}>
             check_circle
           </span>
-          Piston API
+          API
         </div>
       </div>
     </footer>

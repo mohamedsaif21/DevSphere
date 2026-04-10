@@ -1,10 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, Play, Zap } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ArrowRight, Play } from 'lucide-react';
 import IDEMockup from './IDEMockup';
 
 export default function HeroSection() {
+  const router = useRouter();
+
+  const handleGetStarted = () => {
+    router.push('/compiler');
+  };
+
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center pt-24 pb-16 overflow-hidden">
       <div className="absolute inset-0 dot-grid opacity-40" />
@@ -51,14 +58,14 @@ export default function HeroSection() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              href="/compiler"
+            <button
+              onClick={handleGetStarted}
               className="btn-cta px-7 py-3.5 rounded-xl text-sm font-semibold flex items-center gap-2 w-full sm:w-auto justify-center"
               style={{ color: '#0c1324' }}
             >
               Get Started Free
               <ArrowRight className="w-4 h-4" />
-            </Link>
+            </button>
             <button
               className="btn-outline-ds px-7 py-3.5 rounded-xl text-sm font-medium flex items-center gap-2 w-full sm:w-auto justify-center"
             >

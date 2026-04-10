@@ -39,6 +39,15 @@ export function useCompiler() {
     setErrorCount(0);
   }, []);
 
+  const appendOutputLines = useCallback((lines: OutputLine[]) => {
+    if (!lines.length) return;
+    setOutputLines((prev) => [...prev, ...lines]);
+  }, []);
+
+  const pushOutputLine = useCallback((line: OutputLine) => {
+    setOutputLines((prev) => [...prev, line]);
+  }, []);
+
   const runAIDebug = useCallback(async (codeToDebug: string, errorText: string | null) => {
     setActiveTab('ai');
     setAiState('thinking');
@@ -210,6 +219,8 @@ export function useCompiler() {
     activeTab, setActiveTab,
     errorCount,
     runCode, debugCode, clearOutput,
+    appendOutputLines,
+    pushOutputLine,
     currentLang: LANG_CONFIG[langKey],
   };
 }
