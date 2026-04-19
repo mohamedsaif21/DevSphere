@@ -97,7 +97,7 @@ export default function SavedProjectsPage() {
           <h1 className="text-4xl font-bold mb-2" style={{ color: '#dce1fb' }}>
             Saved Projects
           </h1>
-          <p style={{ color: '#cbc3d7' }}>View and manage all your saved code snippets</p>
+            <p style={{ color: '#cbc3d7' }}>View and manage all your saved code snippets stored locally</p>
         </div>
 
         {loading ? (
@@ -125,8 +125,8 @@ export default function SavedProjectsPage() {
             <p style={{ color: '#cbc3d7' }}>Start coding and save your projects to see them here</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {savedCodes.map((code) => (
+          <div className="flex flex-col gap-4">
+            {savedCodes.map((code, index) => (
               <div
                 key={code.id}
                 className="rounded-xl p-5 cursor-pointer transition-all hover:shadow-lg"
@@ -139,6 +139,9 @@ export default function SavedProjectsPage() {
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: 'rgba(203,195,215,0.08)', color: '#cbc3d7' }}>
+                        #{index + 1}
+                      </span>
                       <div
                         className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                         style={{ backgroundColor: getLanguageColor(code.language) }}

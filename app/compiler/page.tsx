@@ -15,7 +15,6 @@ export default function CompilerPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [user, setUser] = useState<any>(null);
-  const [error, setError] = useState('');
 
   const {
     langKey, setLangKey,
@@ -72,8 +71,11 @@ export default function CompilerPage() {
 
   const handleSaveCode = async (title: string, description: string) => {
     if (!user) {
-      setError('User not authenticated');
-      return;
+      throw new Error('User not authenticated');
+    }
+
+    if (!code.trim()) {
+      throw new Error('Cannot save empty code');
     }
 
     setIsSaving(true);
@@ -85,15 +87,9 @@ export default function CompilerPage() {
         description,
       });
 
-      if (result.success) {
-        setError('');
-        // Optional: Show success notification
-        console.log('Code saved successfully');
-      } else {
-        setError(result.error);
+      if (!result.success) {
+        throw new Error(result.error);
       }
-    } catch (err: any) {
-      setError(err?.message || 'Failed to save code');
     } finally {
       setIsSaving(false);
     }

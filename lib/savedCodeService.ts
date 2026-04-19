@@ -1,10 +1,35 @@
 import { SavedCode } from '@/types/savedCode';
 
 const STORAGE_KEY = 'devsphere_saved_codes_v1';
+const STORAGE_FOLDERS_KEY = 'devsphere_local_folders_v1';
+
+type LocalFoldersStore = {
+  users: Record<
+    string,
+    {
+      projects: SavedCode[];
+    }
+  >;
+};
+
+function normalizeUserId(userId: string): string {
+  return userId.trim().toLowerCase();
+}
 
 function readAll(): SavedCode[] {
   if (typeof window === 'undefined') return [];
   try {
+    const foldersRaw = localStorage.getItem(STORAGE_FOLDERS_KEY);
+    if (foldersRaw) {
+      const folders = JSON.parse(foldersRaw) as LocalFoldersStore;
+      if (folders && folders.users && typeof folders.users === 'object') {
+        return Object.values(folders.users).flatMap((userFolder) =>
+          Array.isArray(userFolder?.projects) ? userFolder.projects : []
+        );
+      }
+    }
+
+    // Legacy format fallback
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
@@ -16,6 +41,18 @@ function readAll(): SavedCode[] {
 
 function writeAll(items: SavedCode[]) {
   if (typeof window === 'undefined') return;
+  const folders: LocalFoldersStore = { users: {} };
+
+  for (const item of items) {
+    const uid = normalizeUserId(item.user_id || 'guest');
+    if (!folders.users[uid]) {
+      folders.users[uid] = { projects: [] };
+    }
+    folders.users[uid].projects.push(item);
+  }
+
+  // Keep both keys temporarily for backward compatibility.
+  localStorage.setItem(STORAGE_FOLDERS_KEY, JSON.stringify(folders));
   localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
 }
 
@@ -32,10 +69,11 @@ export async function saveCode(
 ) {
   try {
     const all = readAll();
+    const normalizedUserId = normalizeUserId(userId);
     const now = new Date().toISOString();
     const row: SavedCode = {
       id: newId(),
-      user_id: userId,
+      user_id: normalizedUserId,
       title: codeData.title,
       language: codeData.language,
       code: codeData.code,
@@ -53,9 +91,10 @@ export async function saveCode(
 
 export async function getUserSavedCodes(userId: string) {
   try {
+    const normalizedUserId = normalizeUserId(userId);
     const all = readAll();
     const data = all
-      .filter((c) => c.user_id === userId)
+      .filter((c) => normalizeUserId(c.user_id) === normalizedUserId)
       .sort((a, b) => {
         const ta = new Date(a.created_at || 0).getTime();
         const tb = new Date(b.created_at || 0).getTime();
