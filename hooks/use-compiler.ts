@@ -11,6 +11,7 @@ export type AIState = 'idle' | 'thinking' | 'done' | 'error';
 export function useCompiler() {
   const [langKey, setLangKeyState] = useState<LanguageKey>('python');
   const [code, setCode] = useState<string>(LANG_CONFIG.python.starter);
+  const [stdin, setStdin] = useState<string>('');
   const [outputLines, setOutputLines] = useState<OutputLine[]>([
     { text: 'Ready. Write code and click Run.', type: 'info' },
   ]);
@@ -125,6 +126,7 @@ export function useCompiler() {
         body: JSON.stringify({
           code:     trimmed,
           language: langKey,
+          stdin,
         }),
       });
 
@@ -140,6 +142,13 @@ export function useCompiler() {
       const lines: OutputLine[] = [
         { text: `▶ ${cfg.name} · ${cfg.file} · Judge0 (RapidAPI)`, type: 'info' },
       ];
+
+      const stdinHints = buildStdinHints(langKey, trimmed, stdin);
+      if (stdinHints.length) {
+        stdinHints.forEach((hint) => {
+          lines.push({ text: hint, type: 'info' });
+        });
+      }
 
       if (stdout) {
         stdout.split('\n').forEach((l) => {
@@ -196,7 +205,7 @@ export function useCompiler() {
     } finally {
       setIsRunning(false);
     }
-  }, [code, langKey, runAIDebug]);
+  }, [code, langKey, runAIDebug, stdin]);
 
   const debugCode = useCallback(async () => {
     const trimmed = code.trim();
@@ -212,6 +221,7 @@ export function useCompiler() {
   return {
     langKey, setLangKey,
     code, setCode,
+    stdin, setStdin,
     outputLines,
     errorItems,
     aiLines, aiState,
@@ -223,6 +233,59 @@ export function useCompiler() {
     pushOutputLine,
     currentLang: LANG_CONFIG[langKey],
   };
+}
+
+function buildStdinHints(lang: LanguageKey, code: string, stdinText: string): string[] {
+  const hints: string[] = [];
+  const hasStdin = stdinText.trim().length > 0;
+
+  if (lang === 'python') {
+    const hasInputCall = /\binput\s*\(/.test(code);
+    if (!hasInputCall) return hints;
+
+    const assignedVars = Array.from(
+      code.matchAll(/(^|\n)\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*input\s*\(/g)
+    ).map((m) => m[2]);
+    const uniqueVars = [...new Set(assignedVars)].slice(0, 3);
+
+    if (uniqueVars.length) {
+      hints.push(`stdin hint: ${uniqueVars.join(', ')} ${uniqueVars.length > 1 ? 'are variables' : 'is a variable'} that store user input values.`);
+    } else {
+      hints.push('stdin hint: input() reads from stdin (user-provided input).');
+    }
+
+    if (!hasStdin) {
+      hints.push('stdin hint: add values in the Program input (stdin) box. Example for n = input(): type 5 (not n).');
+    }
+
+    return hints;
+  }
+
+  if (lang === 'java') {
+    const hasScannerInput = /\bScanner\b|\bnext(Int|Line|Double|Float|Long|Short|Byte|Boolean)\s*\(/.test(code);
+    if (!hasScannerInput) return hints;
+
+    hints.push('stdin hint: Scanner reads values from stdin; variables store typed values, not variable names.');
+    if (!hasStdin) {
+      hints.push('stdin hint: fill Program input (stdin) with values line by line (or space-separated for Scanner).');
+    }
+
+    return hints;
+  }
+
+  if (lang === 'c') {
+    const hasCInput = /\bscanf\s*\(|\bfgets\s*\(|\bgetchar\s*\(/.test(code);
+    if (!hasCInput) return hints;
+
+    hints.push('stdin hint: scanf/fgets/getchar read from stdin; C variables receive the typed values.');
+    if (!hasStdin) {
+      hints.push('stdin hint: provide Program input (stdin) values in the expected order.');
+    }
+
+    return hints;
+  }
+
+  return hints;
 }
 
 function buildFallbackAI(

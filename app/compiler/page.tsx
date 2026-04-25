@@ -19,6 +19,7 @@ export default function CompilerPage() {
   const {
     langKey, setLangKey,
     code, setCode,
+    stdin, setStdin,
     outputLines,
     errorItems,
     aiLines, aiState,
@@ -117,6 +118,8 @@ export default function CompilerPage() {
           <TerminalPanel
             activeTab={activeTab}
             onTabChange={setActiveTab}
+            stdin={stdin}
+            onStdinChange={setStdin}
             outputLines={outputLines}
             errorItems={errorItems}
             errorCount={errorCount}

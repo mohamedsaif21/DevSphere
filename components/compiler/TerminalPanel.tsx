@@ -3,10 +3,13 @@
 import React from 'react';
 import { TerminalTab, OutputLine, ErrorItem } from '@/types/compiler';
 import { AILine, AIState } from '@/hooks/use-compiler';
+import StdinInput from '@/components/compiler/StdinInput';
 
 interface TerminalPanelProps {
   activeTab: TerminalTab;
   onTabChange: (tab: TerminalTab) => void;
+  stdin: string;
+  onStdinChange: (value: string) => void;
   outputLines: OutputLine[];
   errorItems: ErrorItem[];
   errorCount: number;
@@ -19,6 +22,8 @@ interface TerminalPanelProps {
 export default function TerminalPanel({
   activeTab,
   onTabChange,
+  stdin,
+  onStdinChange,
   outputLines,
   errorItems,
   errorCount,
@@ -81,7 +86,8 @@ export default function TerminalPanel({
 
         {activeTab === 'output' && (
           <div className="ds-panel">
-            <div className="ds-term-header">DevSphere Terminal v1.0.0 · Piston API</div>
+            <StdinInput value={stdin} onChange={onStdinChange} />
+            <div className="ds-term-header">DevSphere Terminal v1.0.0 · Judge0 API</div>
             {outputLines.map((line, i) => (
               <div key={i} className={`ds-line ds-line-${line.type}`}>
                 {line.text}
