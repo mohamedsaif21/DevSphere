@@ -246,7 +246,9 @@ function buildStdinHints(lang: LanguageKey, code: string, stdinText: string): st
     const assignedVars = Array.from(
       code.matchAll(/(^|\n)\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*input\s*\(/g)
     ).map((m) => m[2]);
-    const uniqueVars = [...new Set(assignedVars)].slice(0, 3);
+    const uniqueVars = assignedVars
+      .filter((value, index, array) => array.indexOf(value) === index)
+      .slice(0, 3);
 
     if (uniqueVars.length) {
       hints.push(`stdin hint: ${uniqueVars.join(', ')} ${uniqueVars.length > 1 ? 'are variables' : 'is a variable'} that store user input values.`);
