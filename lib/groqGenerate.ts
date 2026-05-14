@@ -8,7 +8,7 @@ export async function generateGroqText(prompt: string, apiKey: string): Promise<
   
   try {
     const message = await client.chat.completions.create({
-      model: 'mixtral-8x7b-32768', // GROQ's powerful fast model
+      model: 'llama-3.1-70b-versatile', // Currently supported GROQ model
       max_tokens: 1024,
       messages: [
         {
