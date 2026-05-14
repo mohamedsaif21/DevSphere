@@ -37,12 +37,12 @@
     └──────┬──────┘              └──────┬───────┘
            │                            │
            ▼                            ▼
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓  ┏━━━━━━━━━━━━━━━━━━━━━━┓
-┃  JUDGE0 API (RapidAPI)     ┃  ┃  GEMINI API (Google) ┃
-┃                             ┃  ┃                      ┃
-┃  • Compilation              ┃  ┃  • AI Analysis       ┃
-┃  • Execution                ┃  ┃  • Error Diagnosis   ┃
-┃  • Output Capture           ┃  ┃  • Code Review       ┃
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┓  ┏━━━━━━━━━━━━━━━━━━━━━━┓
+┃  OneCompiler API           ┃  ┃  GEMINI API (Google) ┃
+┃                            ┃  ┃                      ┃
+┃  • Compilation             ┃  ┃  • AI Analysis       ┃
+┃  • Execution               ┃  ┃  • Error Diagnosis   ┃
+┃  • Output Capture          ┃  ┃  • Code Review       ┃
 ┃  • Error Handling           ┃  ┃  • Explanations      ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛  ┗━━━━━━━━━━━━━━━━━━━━━━┛
            │                            │
@@ -164,50 +164,45 @@ User in /compiler page
        ┌──────────────────────────────────┐
        │ Backend validates & maps         │
        │ Language ID mapping:             │
-       │ • python → 71                    │
-       │ • java → 62                      │
-       │ • c → 50                         │
+       │ • python → python                │
+       │ • java → java                    │
+       │ • c → c                          │
        └────┬──────────────────────┬──────┘
             │                      │
             │ INVALID              │ VALID
             ▼                      ▼
          Return 400         ┌─────────────────────┐
-         Error              │ Call Judge0 API     │
-                            │ POST /submissions   │
+         Error              │ Call OneCompiler    │
+                            │ POST /execute       │
                             └────────┬────────────┘
                                      │
                                      ▼
                             ┌─────────────────────────┐
-                            │ Judge0 returns TOKEN    │
-                            │ (async submission)      │
+                            │ OneCompiler processes   │
+                            │ code execution request  │
                             └────────┬────────────────┘
                                      │
-                                     ▼
-                    ┌────────────────────────────────┐
-                    │ Poll for results (max 12 times)│
-                    │ GET /submissions/{token}       │
-                    │ Wait 1 sec between polls       │
-                    └────┬──────────────────┬────────┘
-                         │                  │
-                    TIMEOUT            SUCCESS
-                    (12 loops)         (status ≥ 3)
-                         │                  │
-                         ▼                  ▼
-                    Return            ┌──────────────────┐
-                    Timeout           │ Extract output:  │
-                    Error             │ • stdout         │
-                                      │ • stderr         │
-                                      │ • compile_output │
-                                      │ • exit_code      │
-                                      └────────┬─────────┘
-                                               │
-                                               ▼
-                                    ┌──────────────────────┐
-                                    │ Return to Frontend   │
-                                    │ 200 OK with results  │
-                                    └────────┬─────────────┘
-                                             │
-                                             ▼
+                    ┌────────────────┴────────────────┐
+                    │                                 │
+                EXECUTION                        EXECUTION
+                ERROR/TIMEOUT                    SUCCESS
+                    │                                 │
+                    ▼                                 ▼
+                Return           ┌──────────────────────┐
+                Error            │ Extract output:      │
+                                 │ • stdout             │
+                                 │ • stderr             │
+                                 │ • exit_code          │
+                                 │ • execution_time     │
+                                 └────────┬─────────────┘
+                                          │
+                                          ▼
+                                 ┌──────────────────────┐
+                                 │ Return to Frontend   │
+                                 │ 200 OK with results  │
+                                 └────────┬─────────────┘
+                                          │
+                                          ▼
                               ┌──────────────────────────┐
                               │ Frontend receives        │
                               │ Update state:            │
@@ -533,16 +528,15 @@ interface LanguageConfig {
   starter: string;             // Template code
 }
 
-// API Response from Judge0
-interface PistonResponse {
-  run?: {
-    stdout: string;
-    stderr: string;
-    code: number;
-    signal: string | null;
-    output: string;
-  },
-  compile?: {
+// API Response from OneCompiler
+interface OneCompilerResponse {
+  output?: string;
+  stdout?: string;
+  stderr?: string;
+  exitCode?: number;
+  compilationStatus?: string;
+  executionTime?: string;
+}
     stdout: string;
     stderr: string;
     code: number;
@@ -687,11 +681,11 @@ Frontend:
 └─ CSS-in-JS for dynamic styling
 
 Backend:
-├─ Polling instead of WebSockets (simpler)
+├─ Direct execution (synchronous API)
 ├─ API key validation once at startup
 ├─ Error isolation (doesn't crash server)
-├─ Timeout protection (12-second max)
-└─ Memory limit enforced by Judge0
+├─ Timeout protection
+└─ Memory limit enforced by OneCompiler
 
 User Experience:
 ├─ Immediate visual feedback (loading state)

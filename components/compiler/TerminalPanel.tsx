@@ -87,7 +87,7 @@ export default function TerminalPanel({
         {activeTab === 'output' && (
           <div className="ds-panel">
             <StdinInput value={stdin} onChange={onStdinChange} />
-            <div className="ds-term-header">DevSphere Terminal v1.0.0 · Judge0 API</div>
+            <div className="ds-term-header">DevSphere Terminal v1.0.0 · OneCompiler API</div>
             {outputLines.map((line, i) => (
               <div key={i} className={`ds-line ds-line-${line.type}`}>
                 {line.text}

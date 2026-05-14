@@ -140,7 +140,7 @@ export function useCompiler() {
       const memory:   string = data.memory  || '';
 
       const lines: OutputLine[] = [
-        { text: `▶ ${cfg.name} · ${cfg.file} · Judge0 (RapidAPI)`, type: 'info' },
+        { text: `▶ ${cfg.name} · ${cfg.file} · OneCompiler`, type: 'info' },
       ];
 
       const stdinHints = buildStdinHints(langKey, trimmed, stdin);

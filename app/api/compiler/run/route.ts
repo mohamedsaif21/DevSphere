@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const RAPIDAPI_HOST = 'judge029.p.rapidapi.com';
-const RAPIDAPI_BASE = `https://${RAPIDAPI_HOST}`;
+const ONECOMPILER_API = 'https://api.onecompiler.com/v1';
 
-const LANGUAGE_IDS: Record<string, number> = {
-  python: 71,
-  java:   62,
-  c:      50,
+const LANGUAGE_CODES: Record<string, string> = {
+  python: 'python',
+  java:   'java',
+  c:      'c',
 };
 
 const FILENAMES: Record<string, string> = {
@@ -17,7 +16,6 @@ const FILENAMES: Record<string, string> = {
 
 export async function POST(req: NextRequest) {
   try {
-    // NOW ACCEPTS stdin field
     const { code, language, stdin = '' } = await req.json();
 
     if (!code || !language) {
@@ -26,90 +24,70 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    const languageId = LANGUAGE_IDS[language as string];
-    if (!languageId) {
+    const langCode = LANGUAGE_CODES[language as string];
+    if (!langCode) {
       return NextResponse.json({
         stdout: '', stderr: `Unsupported language: ${language}`, exitCode: 1, status: 'Bad Request',
       }, { status: 400 });
     }
 
-    const apiKey = process.env.RAPIDAPI_KEY;
+    const apiKey = process.env.ONECOMPILER_API_KEY;
     if (!apiKey) {
       return NextResponse.json({
-        stdout: '', stderr: 'RAPIDAPI_KEY not set in .env.local', exitCode: 1, status: 'Config Error',
+        stdout: '', stderr: 'ONECOMPILER_API_KEY not set in .env.local', exitCode: 1, status: 'Config Error',
       }, { status: 500 });
     }
 
     const headers = {
-      'Content-Type':    'application/json',
-      'x-rapidapi-host': RAPIDAPI_HOST,
-      'x-rapidapi-key':  apiKey,
+      'Content-Type': 'application/json',
+      'X-API-Key': apiKey,
     };
 
-    // Submit with stdin
-    const submitRes = await fetch(
-      `${RAPIDAPI_BASE}/submissions?base64_encoded=false&wait=false`,
+    // Execute code via OneCompiler API with correct format
+    const executeRes = await fetch(
+      `${ONECOMPILER_API}/run`,
       {
         method: 'POST',
         headers,
         body: JSON.stringify({
-          source_code:    code,
-          language_id:    languageId,
-          stdin:          stdin,
-          cpu_time_limit: 5,
-          memory_limit:   128000,
+          language: langCode,
+          files: [
+            {
+              name: FILENAMES[language as string],
+              content: code,
+            }
+          ],
+          stdin: stdin,
         }),
       }
     );
 
-    if (!submitRes.ok) {
-      const errText = await submitRes.text();
-      throw new Error(`Submit failed (${submitRes.status}): ${errText}`);
+    if (!executeRes.ok) {
+      const errText = await executeRes.text();
+      throw new Error(`OneCompiler execution failed (${executeRes.status}): ${errText}`);
     }
 
-    const { token } = await submitRes.json();
-    if (!token) throw new Error('No token returned from Judge0.');
+    const result = await executeRes.json();
 
-    // Poll until done
-    let result: Record<string, unknown> | null = null;
-    for (let i = 0; i < 12; i++) {
-      await new Promise(r => setTimeout(r, 1000));
-      const pollRes = await fetch(
-        `${RAPIDAPI_BASE}/submissions/${token}?base64_encoded=false&fields=stdout,stderr,compile_output,status,exit_code,time,memory`,
-        { method: 'GET', headers }
-      );
-      if (!pollRes.ok) continue;
-      const data = await pollRes.json();
-      const statusId: number = (data.status as { id: number })?.id ?? 0;
-      if (statusId >= 3) { result = data; break; }
-    }
-
-    if (!result) {
-      return NextResponse.json({
-        stdout: '', stderr: 'Execution timed out.', exitCode: 1, status: 'Timeout',
-      });
-    }
-
-    const stdout        = (result.stdout         as string) ?? '';
-    const stderr        = (result.stderr         as string) ?? '';
-    const compileOutput = (result.compile_output as string) ?? '';
-    const exitCode      = (result.exit_code      as number) ?? 0;
-    const status        = (result.status as { description: string })?.description ?? 'Unknown';
-    const time          = (result.time           as string) ?? '';
-    const memory        = (result.memory         as number) ?? 0;
-    const errorOutput   = [compileOutput, stderr].filter(Boolean).join('\n').trim();
+    const stdout    = (result.stdout || '') as string;
+    const stderr    = (result.stderr || '') as string;
+    const exception = (result.exception || '') as string;
+    const exitCode  = result.status === 'success' ? 0 : 1;
+    const errorOutput = [exception, stderr].filter(Boolean).join('\n').trim();
 
     return NextResponse.json({
       stdout: stdout.trim(),
       stderr: errorOutput,
-      exitCode, status, time,
-      memory:   memory ? `${memory} KB` : '',
+      exitCode,
+      status: result.status || 'Unknown',
+      time: result.executionTime ? `${result.executionTime}ms` : '',
+      memory: result.memoryUsed ? `${result.memoryUsed} KB` : '',
       filename: FILENAMES[language as string],
     });
 
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
-    console.error('[/api/run]', message);
+    console.error('[/api/compiler/run]', message);
     return NextResponse.json({
       stdout: '', stderr: `Server error: ${message}`, exitCode: 1, status: 'Internal Error',
     }, { status: 500 });

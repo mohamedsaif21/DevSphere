@@ -64,7 +64,7 @@
 - **Node.js** - Backend runtime
 
 ### External Services
-1. **Judge0 API** (via RapidAPI) - Code Execution Engine
+1. **OneCompiler API** - Code Execution Engine
    - Compiles and runs Python, Java, C code
    - Handles code submission, compilation, and output
 
@@ -404,8 +404,9 @@ GEMINI_API_KEY=your_gemini_api_key
 # Optional: Specify which Gemini model to use
 GEMINI_MODEL=gemini-2.5-flash-lite
 
-# RapidAPI (Judge0 Code Execution)
-RAPIDAPI_KEY=your_rapidapi_key
+# OneCompiler API (Code Execution)
+ONECOMPILER_API_KEY=your_onecompiler_api_key
+NEXT_PUBLIC_ONECOMPILER_API=https://api.onecompiler.com/api/v1
 
 # Next.js
 NODE_ENV=development
@@ -418,11 +419,11 @@ NODE_ENV=development
 2. Create a free API key
 3. Save to `GEMINI_API_KEY`
 
-**RapidAPI (Judge0):**
-1. Sign up at [RapidAPI](https://rapidapi.com)
-2. Subscribe to Judge0 API
-3. Get API key from dashboard
-4. Save to `RAPIDAPI_KEY`
+**OneCompiler API:**
+1. Go to [OneCompiler API Console](https://onecompiler.com/api-console)
+2. Generate an API key from your console
+3. Copy the API key
+4. Save to `ONECOMPILER_API_KEY` in `.env.local`
 
 ---
 
