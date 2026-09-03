@@ -1,186 +1,197 @@
-<h1 align="center"><strong>DevSphere — AI-Powered Online Code IDE</strong></h1>
+<h1 align="center">DevSphere — AI-Powered Online Code IDE</h1>
 
 <p align="center">
   <strong>Write, run, debug, and save code with AI-powered assistance.</strong>
 </p>
 
 <p align="center">
-  <strong>Next.js • React • TypeScript • Tailwind CSS • Gemini AI • Judge0</strong>
+  Next.js • React • TypeScript • Tailwind CSS • Google Gemini • Judge0
 </p>
 
 <p align="center">
-  <strong>
-    <a href="https://dev-sphere-psi.vercel.app/">🌐 Live Application</a>
-    &nbsp
-  </strong>
+  <a href="https://dev-sphere-psi.vercel.app/">
+    <strong>🌐 Live Application</strong>
+  </a>
 </p>
 
-🖥️ Dashboard Preview
+---
+
+## 🖥️ Dashboard Preview
 
 <p align="center">
-  <img src="dashboard.png" alt="DevSphere Dashboard" width="90%">
+  <img src="compilerpage.png" alt="DevSphere Code Compiler Dashboard" width="90%">
 </p>
 
-📌 Overview
+---
+
+## 📌 Overview
+
+**DevSphere** is a modern, browser-based online code IDE designed to make coding, execution, debugging, and project management simple and accessible.
+
+It allows users to write and execute programs directly from the browser while providing **AI-powered debugging assistance** through Google Gemini.
+
+DevSphere currently supports:
+
+* 🐍 Python
+* ☕ Java
+* ⚙️ C
+
+Code execution is handled through the **Judge0 API**, while Google Gemini analyzes compilation and runtime errors and provides understandable explanations and suggestions.
+
+---
+
+## ✨ Features
+
+| Feature                       | Description                                             |
+| ----------------------------- | ------------------------------------------------------- |
+| 💻 **Multi-Language Support** | Write and execute Python, Java, and C programs          |
+| 📝 **Code Editor**            | Modern editor with syntax highlighting and line numbers |
+| ▶️ **Code Execution**         | Execute code and view output directly in the browser    |
+| 🤖 **AI Debugging**           | Analyze errors and receive AI-generated explanations    |
+| 💾 **Save Projects**          | Save and manage code projects using browser storage     |
+| 📊 **User Dashboard**         | Centralized access to compiler and saved projects       |
+| 📱 **Responsive UI**          | Optimized for desktop and different screen sizes        |
+
+---
+
+## 🛠️ Tech Stack
+
+| Technology           | Purpose                                 |
+| -------------------- | --------------------------------------- |
+| **Next.js**          | Full-stack React framework              |
+| **React**            | User interface development              |
+| **TypeScript**       | Type-safe application development       |
+| **Tailwind CSS**     | Styling and responsive UI               |
+| **Radix UI**         | Accessible UI components                |
+| **Google Gemini**    | AI-powered debugging and error analysis |
+| **Judge0 API**       | Remote code compilation and execution   |
+| **Node.js**          | Backend runtime                         |
+| **Vercel / Netlify** | Application deployment                  |
+
+---
 
-DevSphere is a modern online code compiler and IDE that allows users to write, execute, debug, and save code from the browser.
+## 🏗️ Application Architecture
 
-The platform supports Python, Java, and C, with real-time code execution through Judge0 and AI-powered error analysis using Google Gemini.
+```text
+                    ┌───────────────────┐
+                    │       User        │
+                    └─────────┬─────────┘
+                              │
+                              ▼
+                    ┌───────────────────┐
+                    │    DevSphere IDE  │
+                    └─────────┬─────────┘
+                              │
+                    ┌─────────▼─────────┐
+                    │  Select Language  │
+                    └─────────┬─────────┘
+                              │
+                    ┌─────────▼─────────┐
+                    │    Write Code     │
+                    └─────────┬─────────┘
+                              │
+                    ┌─────────▼─────────┐
+                    │    Run Program    │
+                    └─────────┬─────────┘
+                              │
+                              ▼
+                    ┌───────────────────┐
+                    │     Judge0 API    │
+                    └─────────┬─────────┘
+                              │
+                              ▼
+                    ┌───────────────────┐
+                    │ Terminal / Output │
+                    └───────────────────┘
 
-✨ Features
+                 If an error occurs
+                              │
+                              ▼
+                    ┌───────────────────┐
+                    │    Ask AI / Debug │
+                    └─────────┬─────────┘
+                              │
+                              ▼
+                    ┌───────────────────┐
+                    │   Google Gemini   │
+                    └─────────┬─────────┘
+                              │
+                              ▼
+                    ┌───────────────────┐
+                    │ Error Explanation │
+                    │   & Suggestions   │
+                    └───────────────────┘
+```
 
-💻 Multi-Language Support — Python, Java, and C
+---
 
-📝 Real-Time Code Editor — Syntax highlighting and line numbers
+## 🔄 How DevSphere Works
 
-▶️ Code Execution — Run code with real-time output
+### 1. Write Code
 
-🤖 AI-Powered Debugging — Explain errors and provide coding suggestions
+Users open the DevSphere compiler and select a supported programming language.
 
-💾 Save Projects — Save and manage code snippets locally
+### 2. Execute Code
 
-📊 User Dashboard — Centralized access to compiler and projects
+The written code is sent to the compiler API and executed through **Judge0**.
 
-📱 Responsive Design — Optimized for different screen sizes
+### 3. View Results
 
-🛠️ Tech Stack
+The compiler returns the program's output, compilation result, or runtime error to the terminal.
 
-Technology
+### 4. AI Debugging
 
-Purpose
+If an error occurs, users can request AI assistance.
 
-Next.js
+The error information is analyzed using **Google Gemini**, which provides:
 
-Full-stack web framework
+* Error explanation
+* Possible cause
+* Suggested solution
+* Coding recommendations
 
-React
+### 5. Save Projects
 
-User interface
+Users can save their code projects locally and access them later from the **Saved Projects** section.
 
-TypeScript
+---
 
-Type-safe development
+## 🔌 API Routes
 
-Tailwind CSS
+| Method | Endpoint              | Purpose                                 |
+| ------ | --------------------- | --------------------------------------- |
+| `POST` | `/api/compiler/run`   | Compile and execute source code         |
+| `POST` | `/api/compiler/debug` | Analyze code errors using Google Gemini |
 
-Styling
+---
 
-Radix UI
+## 💾 Data Storage
 
-UI components
+DevSphere currently uses **browser `localStorage`** for lightweight client-side storage.
 
-Google Gemini
+It is currently used for:
 
-AI debugging
+* Login session information
+* Saved code projects
+* User-specific local data
 
-Judge0 API
+> **Note:** DevSphere does not currently require an external database for its core functionality.
 
-Code execution
+A database-backed storage system is planned for future versions.
 
-Node.js
+---
 
-Backend runtime
+## 📁 Project Structure
 
-Vercel / Netlify
-
-Deployment
-
-🚀 Quick Start
-
-Prerequisites
-
-Node.js 18+
-
-npm
-
-Git
-
-Installation
-
-git clone YOUR_GITHUB_REPOSITORY_URL
-cd Devsphere
-npm install
-
-Create a .env.local file:
-
-GEMINI_API_KEY=your_gemini_api_key
-GEMINI_MODEL=gemini-2.5-flash-lite
-RAPIDAPI_KEY=your_rapidapi_key
-NODE_ENV=development
-
-Run Locally
-
-npm run dev
-
-Open:
-
-http://localhost:3000
-
-Build for Production
-
-npm build
-npm start
-
-🔄 How It Works
-
-User
-  ↓
-DevSphere IDE
-  ↓
-Select Language
-  ↓
-Write Code
-  ↓
-Run Code ──────────→ Judge0 API
-  ↓                       ↓
-Terminal Output ←─────────┘
-
-If an error occurs
-  ↓
-Ask AI
-  ↓
-Google Gemini
-  ↓
-Error Explanation & Suggestions
-
-🔌 API Routes
-
-Method
-
-Endpoint
-
-Purpose
-
-POST
-
-/api/compiler/run
-
-Compile and execute code
-
-POST
-
-/api/compiler/debug
-
-Analyze code errors using AI
-
-💾 Data Storage
-
-DevSphere currently uses browser localStorage for:
-
-Login session information
-
-Saved code projects
-
-No external database is currently required.
-
-📁 Project Structure
-
+```text
 Devsphere/
+│
 ├── app/
 │   ├── api/
 │   │   └── compiler/
 │   │       ├── run/
 │   │       └── debug/
+│   │
 │   ├── compiler/
 │   ├── home/
 │   ├── login/
@@ -198,24 +209,123 @@ Devsphere/
 ├── utils/
 ├── constants/
 ├── docs/
+│
 ├── .env.example
-└── package.json
+├── package.json
+└── README.md
+```
 
-🔮 Future Enhancements
+---
 
-Database-backed project storage
+## 🚀 Getting Started
 
-OAuth / JWT authentication
+Follow the steps below to run DevSphere locally.
 
-Code sharing and collaboration
+### Prerequisites
 
-Additional programming languages
+Make sure you have the following installed:
 
-Advanced debugging tools
+* **Node.js 18+**
+* **npm**
+* **Git**
 
-Git integration
+### 1. Clone the Repository
 
-👨‍💻 Author
+```bash
+git clone YOUR_GITHUB_REPOSITORY_URL
+cd Devsphere
+```
+
+### 2. Install Dependencies
+
+```bash
+npm install
+```
+
+### 3. Configure Environment Variables
+
+Create a `.env.local` file in the root directory:
+
+```env
+GEMINI_API_KEY=your_gemini_api_key
+GEMINI_MODEL=gemini-2.5-flash-lite
+RAPIDAPI_KEY=your_rapidapi_key
+NODE_ENV=development
+```
+
+Replace the placeholder values with your actual API credentials.
+
+> ⚠️ **Security:** Never commit `.env.local` or expose API keys in your GitHub repository.
+
+### 4. Run the Development Server
+
+```bash
+npm run dev
+```
+
+Open the application at:
+
+```text
+http://localhost:3000
+```
+
+---
+
+## 📦 Production Build
+
+Create a production build using:
+
+```bash
+npm run build
+```
+
+Then start the production server:
+
+```bash
+npm start
+```
+
+---
+
+## 🌐 Live Application
+
+<p align="center">
+  <a href="https://dev-sphere-psi.vercel.app/">
+    <strong>🚀 Open DevSphere</strong>
+  </a>
+</p>
+
+---
+
+## 🔮 Future Enhancements
+
+The following features are planned for future versions:
+
+* 🗄️ Database-backed project storage
+* 🔐 OAuth / JWT authentication
+* 👥 Real-time code sharing and collaboration
+* 🌍 Support for additional programming languages
+* 🧠 Advanced AI debugging and code explanation
+* 🔀 Git and GitHub integration
+* 📂 Cloud-based project management
+* ⚡ Improved code execution experience
+* 📊 Coding activity and project analytics
+
+---
+
+## 🎯 Project Goals
+
+DevSphere was built with the goal of combining a **browser-based development environment** with **AI-assisted debugging**.
+
+The project focuses on making programming more accessible by allowing users to:
+
+> **Write → Run → Understand → Fix → Save**
+
+all within a single platform.
+
+---
+
+## 👨‍💻 Author
 
 <p align="center">
   <strong>Mohamed Saif</strong><br>
@@ -228,4 +338,10 @@ Git integration
   <a href="https://www.linkedin.com/in/mohamed-saif24/">LinkedIn</a>
   &nbsp;•&nbsp;
   <a href="mailto:mohamedsaifb24@gmail.com">Email</a>
+</p>
+
+---
+
+<p align="center">
+  ⭐ If you found DevSphere useful, consider giving the repository a star!
 </p>
