@@ -360,7 +360,7 @@ Set in deployment platform dashboard:
 GEMINI_API_KEY=your_key_here
 
 # Optional: Force specific Gemini model
-GEMINI_MODEL=gemini-2.5-flash-lite
+GEMINI_MODEL=gemini-3.5-flash-lite
 
 # RapidAPI (Judge0)
 RAPIDAPI_KEY=your_key_here

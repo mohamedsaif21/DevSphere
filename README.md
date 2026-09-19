@@ -248,7 +248,15 @@ Create a `.env.local` file in the root directory:
 
 ```env
 GEMINI_API_KEY=your_gemini_api_key
+<<<<<<< HEAD
 GEMINI_MODEL=gemini-2.5-flash-lite
+=======
+
+# Optional: Specify which Gemini model to use
+GEMINI_MODEL=gemini-3.5-flash-lite
+
+# RapidAPI (Judge0 Code Execution)
+>>>>>>> origin/main
 RAPIDAPI_KEY=your_rapidapi_key
 NODE_ENV=development
 ```
@@ -301,6 +309,7 @@ npm start
 
 The following features are planned for future versions:
 
+<<<<<<< HEAD
 * 🗄️ Database-backed project storage
 * 🔐 OAuth / JWT authentication
 * 👥 Real-time code sharing and collaboration
@@ -310,6 +319,27 @@ The following features are planned for future versions:
 * 📂 Cloud-based project management
 * ⚡ Improved code execution experience
 * 📊 Coding activity and project analytics
+=======
+- **Limits:**
+  - 5 second CPU time per execution
+  - 128MB memory per execution
+
+### 2. **Google Generative AI (Gemini)**
+- **Endpoint:** `https://generativelanguage.googleapis.com`
+- **Models:**
+  - Primary: gemini-3.5-flash-lite
+  - Fallback: gemini-2.5-flash, gemini-3.1-flash-lite
+
+- **Usage Process:**
+  1. Build prompt with code and error
+  2. Call Gemini API
+  3. Parse response and return to frontend
+  
+- **Capabilities:**
+  - Error explanation
+  - Code review
+  - Educational feedback
+>>>>>>> origin/main
 
 ---
 
