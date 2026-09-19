@@ -402,7 +402,7 @@ Create a `.env.local` file in the root directory:
 GEMINI_API_KEY=your_gemini_api_key
 
 # Optional: Specify which Gemini model to use
-GEMINI_MODEL=gemini-2.5-flash-lite
+GEMINI_MODEL=gemini-3.5-flash-lite
 
 # RapidAPI (Judge0 Code Execution)
 RAPIDAPI_KEY=your_rapidapi_key
@@ -621,8 +621,8 @@ interface SavedCode {
 ### 2. **Google Generative AI (Gemini)**
 - **Endpoint:** `https://generativelanguage.googleapis.com`
 - **Models:**
-  - Primary: gemini-1.5-flash
-  - Fallback: gemini-1.5-flash-8b, gemini-2.5-flash-lite
+  - Primary: gemini-3.5-flash-lite
+  - Fallback: gemini-2.5-flash, gemini-3.1-flash-lite
 
 - **Usage Process:**
   1. Build prompt with code and error
